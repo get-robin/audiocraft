@@ -7,4 +7,3 @@
 or also including some metadata."""
 
 # flake8: noqa
-from . import audio, audio_dataset, sound_dataset

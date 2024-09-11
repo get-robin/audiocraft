@@ -78,7 +78,6 @@ class MusicGenSolver(base.StandardSolver):
             device (str or None): potential device, as a string, i.e. 'cuda'.
             override_cfg (dict or omegaconf.DictConfig or None): potential device, as a string, i.e. 'cuda'.
         """
-        from audiocraft import train
         our_override_cfg: tp.Dict[str, tp.Any] = {'optim': {'ema': {'use': False}}}
         our_override_cfg['autocast'] = autocast
         if dtype is not None:
@@ -91,12 +90,7 @@ class MusicGenSolver(base.StandardSolver):
             override_cfg = {}
         override_cfg = omegaconf.OmegaConf.merge(
             omegaconf.DictConfig(override_cfg), omegaconf.DictConfig(our_override_cfg))  # type: ignore
-        solver = train.get_solver_from_sig(
-            sig, override_cfg=override_cfg,
-            load_best=True, disable_fsdp=True,
-            ignore_state_keys=['optimizer', 'ema'], **kwargs)
-        solver.model.eval()
-        return solver
+        return None
 
     def get_formatter(self, stage_name: str) -> flashy.Formatter:
         return flashy.Formatter({

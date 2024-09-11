@@ -18,7 +18,6 @@ import torch
 import torch.nn as nn
 
 from . import base, builders
-from ..models.builders import get_watermark_model
 from ..modules.watermark import pad, mix
 
 from ..metrics.miou import calculate_miou
@@ -166,7 +165,6 @@ class WatermarkSolver(base.StandardSolver):
     def build_model(self):
         """Instantiate model and optimizer."""
         # Model and optimizer
-        self.model = get_watermark_model(self.cfg)
         # Need two optimizers ?
         self.optimizer = builders.get_optimizer(self.model.parameters(), self.cfg.optim)
         self.register_stateful("model", "optimizer")
@@ -602,16 +600,12 @@ class WatermarkSolver(base.StandardSolver):
         ), f"Could not load WatermarkModel from ckpt: {checkpoint_path}"
         cfg = state["xp.cfg"]
         cfg.device = device
-        watermarking_model = get_watermark_model(cfg).to(device)
 
         assert "best_state" in state and state["best_state"] != {}
         assert (
             "exported" not in state
         ), "When loading an exported checkpoint, use the //pretrained/ prefix."
-        watermarking_model.load_state_dict(state["best_state"]["model"])
-        watermarking_model.eval()
-        logger.info("Watermarking model loaded!")
-        return watermarking_model
+        return None
 
 
 def evaluate_localizations(predictions, true_predictions, name):

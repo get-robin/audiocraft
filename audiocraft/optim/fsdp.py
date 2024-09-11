@@ -56,7 +56,6 @@ def wrap_with_fsdp(cfg, model: torch.nn.Module,
     from torch.distributed.fsdp.wrap import ModuleWrapPolicy  # type: ignore
 
     # we import this here to prevent circular import.
-    from ..modules.transformer import StreamingTransformerLayer
     from ..modules.conditioners import ConditioningProvider
 
     _fix_post_backward_hook()
@@ -92,8 +91,6 @@ def wrap_with_fsdp(cfg, model: torch.nn.Module,
     assert local_rank < torch.cuda.device_count(), "Please upgrade Dora!"
 
     auto_wrap_policy = None
-    if block_classes is None:
-        block_classes = {StreamingTransformerLayer, ConditioningProvider}
     if cfg.per_block:
         auto_wrap_policy = ModuleWrapPolicy(block_classes)
     wrapped = _FSDPFixStateDict(

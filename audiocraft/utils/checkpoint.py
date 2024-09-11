@@ -65,15 +65,9 @@ def resolve_checkpoint_path(sig_or_path: tp.Union[Path, str], name: tp.Optional[
     Returns:
         Path, optional: Resolved checkpoint path, if it exists.
     """
-    from audiocraft import train
-    xps_root = train.main.dora.dir / 'xps'
     sig_or_path = str(sig_or_path)
-    if sig_or_path.startswith('//sig/'):
-        sig = sig_or_path[len('//sig/'):]
-        path = xps_root / sig
-    else:
-        path = Path(sig_or_path)
-        path = AudioCraftEnvironment.resolve_reference_path(path)
+    path = Path(sig_or_path)
+    path = AudioCraftEnvironment.resolve_reference_path(path)
 
     if path.is_dir():
         path = path / checkpoint_name(name, use_fsdp=use_fsdp)

@@ -27,7 +27,6 @@ from torch.nn.utils.rnn import pad_sequence
 
 from .chroma import ChromaExtractor
 from .streaming import StreamingModule
-from .transformer import create_sin_embedding
 from ..data.audio import audio_read
 from ..data.audio_dataset import SegmentInfo
 from ..data.audio_utils import convert_audio
@@ -1407,8 +1406,6 @@ class ConditionFuser(StreamingModule):
                 cross_attention_output.shape[1],
                 device=cross_attention_output.device
             ).view(1, -1, 1)
-            pos_emb = create_sin_embedding(positions, cross_attention_output.shape[-1])
-            cross_attention_output = cross_attention_output + self.cross_attention_pos_emb_scale * pos_emb
 
         if self._is_streaming:
             self._streaming_state['offsets'] = offsets + T

@@ -20,7 +20,6 @@ from ..utils import checkpoint
 from ..utils.autocast import TorchAutocast
 from ..utils.best_state import BestStateDictManager
 from ..utils.deadlock import DeadlockDetect
-from ..utils.profiler import Profiler
 from ..utils.utils import copy_state, dict_from_config, model_hash, with_rank_rng
 
 
@@ -80,7 +79,6 @@ class StandardSolver(ABC, flashy.BaseSolver):
         self.logger.info("Model hash: %s", model_hash(self.model))
         assert 'model' in self.stateful.sources, \
             "Please register the model to stateful with self.register_stateful('model') in build_model."
-        self.profiler = Profiler(self.model, **self.cfg.profiler)
         self.initialize_ema()
         self.register_stateful('ema')
         assert self.ema is None or 'ema' in self.stateful.sources, \
@@ -610,7 +608,6 @@ class StandardSolver(ABC, flashy.BaseSolver):
             device (str or None): potential device, as a string, i.e. 'cuda'.
             override_cfg (dict or omegaconf.DictConfig or None): potential device, as a string, i.e. 'cuda'.
         """
-        from audiocraft import train
         our_override_cfg: tp.Dict[str, tp.Any] = {'optim': {'ema': {'use': False}}}
         our_override_cfg['autocast'] = autocast
         if dtype is not None:
@@ -623,9 +620,4 @@ class StandardSolver(ABC, flashy.BaseSolver):
             override_cfg = {}
         override_cfg = omegaconf.OmegaConf.merge(
             omegaconf.DictConfig(override_cfg), omegaconf.DictConfig(our_override_cfg))  # type: ignore
-        solver = train.get_solver_from_sig(
-            sig, override_cfg=override_cfg,
-            load_best=True, disable_fsdp=True,
-            ignore_state_keys=['optimizer', 'ema'], **kwargs)
-        solver.model.eval()
-        return solver
+        return None

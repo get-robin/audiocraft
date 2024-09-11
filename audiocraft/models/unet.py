@@ -14,7 +14,6 @@ import typing as tp
 import torch
 from torch import nn
 from torch.nn import functional as F
-from audiocraft.modules.transformer import StreamingTransformer, create_sin_embedding
 
 
 @dataclass
@@ -152,8 +151,6 @@ class DiffusionUnet(nn.Module):
         self.cross_attention = False
         if transformer:
             self.cross_attention = cross_attention
-            self.transformer = StreamingTransformer(chin, 8, 6, bias_ff=False, bias_attn=False,
-                                                    cross_attention=cross_attention)
 
         self.use_codec = False
         if codec_dim is not None:
@@ -193,9 +190,6 @@ class DiffusionUnet(nn.Module):
             else:
                 cross_attention_src = condition_emb.permute(0, 2, 1)  # B, T, C
                 B, T, C = cross_attention_src.shape
-                positions = torch.arange(T, device=x.device).view(1, -1, 1)
-                pos_emb = create_sin_embedding(positions, C, max_period=10_000, dtype=cross_attention_src.dtype)
-                cross_attention_src = cross_attention_src + pos_emb
         if self.use_transformer:
             z = self.transformer(z.permute(0, 2, 1), cross_attention_src=cross_attention_src).permute(0, 2, 1)
         else:

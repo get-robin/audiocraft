@@ -20,7 +20,6 @@ import os
 
 from ._explorers import GenerationEvalExplorer
 from ...environment import AudioCraftEnvironment
-from ... import train
 
 
 def eval(launcher, batch_size: int = 32, eval_melody: bool = False):
@@ -64,15 +63,6 @@ def explorer(launcher):
     partitions = AudioCraftEnvironment.get_slurm_partitions(['team', 'global'])
     launcher.slurm_(gpus=4, partition=partitions)
 
-    if 'REGEN' not in os.environ:
-        folder = train.main.dora.dir / 'grids' / __name__.split('.', 2)[-1]
-        with launcher.job_array():
-            for sig in folder.iterdir():
-                if not sig.is_symlink():
-                    continue
-                xp = train.main.get_xp_from_sig(sig.name)
-                launcher(xp.argv)
-        return
 
     with launcher.job_array():
         musicgen_base = launcher.bind(solver="musicgen/musicgen_base_32khz")

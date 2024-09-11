@@ -15,7 +15,6 @@ from torch import nn
 
 from ..utils import utils
 from ..modules.streaming import StreamingModule, State
-from ..modules.transformer import StreamingTransformer, create_norm_fn
 from ..modules.conditioners import (
     ConditionFuser,
     ClassifierFreeGuidanceDropout,
@@ -164,12 +163,7 @@ class LMModel(StreamingModule):
         self.emb = nn.ModuleList([ScaledEmbedding(embed_dim, dim, lr=emb_lr) for _ in range(n_q)])
         if 'activation' in kwargs:
             kwargs['activation'] = get_activation_fn(kwargs['activation'])
-        self.transformer = StreamingTransformer(
-            d_model=dim, num_heads=num_heads, dim_feedforward=int(hidden_scale * dim),
-            norm=norm, norm_first=norm_first, **kwargs)
         self.out_norm: tp.Optional[nn.Module] = None
-        if norm_first:
-            self.out_norm = create_norm_fn(norm, dim)
         self.linears = nn.ModuleList([nn.Linear(dim, self.card, bias=bias_proj) for _ in range(n_q)])
         self._init_weights(weight_init, depthwise_init, zero_bias_init)
         self._fsdp: tp.Optional[nn.Module]
